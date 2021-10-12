@@ -23,7 +23,9 @@ https://arxiv.org/pdf/1605.07146v1.pdf
 from collections import namedtuple
 
 import numpy as np
-import tensorflow as tf
+#import tensorflow as tf
+import tensorflow.compat.v1 as tf
+#tf.disable_v2_behavior()
 import six
 
 from tensorflow.python.training import moving_averages

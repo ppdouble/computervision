@@ -22,54 +22,68 @@ import sys
 import cifar_input
 import numpy as np
 import resnet_model
-import tensorflow as tf
+#import tensorflow as tf
+import tensorflow.compat.v1 as tf
+#tf.disable_v2_behavior()
 
 
 # FLAGS参数设置
-FLAGS = tf.app.flags.FLAGS
+FLAGS = tf.compat.v1.flags.FLAGS
+#FLAGS = tf.app.flags.FLAGS
 # 数据集类型
-tf.app.flags.DEFINE_string('dataset', 
+#tf.app.flags.DEFINE_string('dataset', 
+tf.compat.v1.flags.DEFINE_string('dataset', 
                            'cifar10', 
                            'cifar10 or cifar100.')
 # 模式：训练、测试
-tf.app.flags.DEFINE_string('mode', 
+#tf.app.flags.DEFINE_string('mode', 
+tf.compat.v1.flags.DEFINE_string('mode', 
                            'train',
                            'train or eval.')
 # 训练数据路径
-tf.app.flags.DEFINE_string('train_data_path', 
+#tf.app.flags.DEFINE_string('train_data_path', 
+tf.compat.v1.flags.DEFINE_string('train_data_path', 
                            'data/cifar-10-batches-bin/data_batch*',
                            'Filepattern for training data.')
 # 测试数据路劲
-tf.app.flags.DEFINE_string('eval_data_path', 
+#tf.app.flags.DEFINE_string('eval_data_path', 
+tf.compat.v1.flags.DEFINE_string('eval_data_path', 
                            'data/cifar-10-batches-bin/test_batch.bin',
                            'Filepattern for eval data')
 # 图片尺寸
-tf.app.flags.DEFINE_integer('image_size', 
+#tf.app.flags.DEFINE_integer('image_size', 
+tf.compat.v1.flags.DEFINE_integer('image_size', 
                             32, 
                             'Image side length.')
 # 训练过程数据的存放路劲
-tf.app.flags.DEFINE_string('train_dir', 
+#tf.app.flags.DEFINE_string('train_dir', 
+tf.compat.v1.flags.DEFINE_string('train_dir', 
                            'temp/train',
                            'Directory to keep training outputs.')
 # 测试过程数据的存放路劲
-tf.app.flags.DEFINE_string('eval_dir', 
+#tf.app.flags.DEFINE_string('eval_dir', 
+tf.compat.v1.flags.DEFINE_string('eval_dir', 
                            'temp/eval',
                            'Directory to keep eval outputs.')
 # 测试数据的Batch数量
-tf.app.flags.DEFINE_integer('eval_batch_count', 
+#tf.app.flags.DEFINE_integer('eval_batch_count', 
+tf.compat.v1.flags.DEFINE_integer('eval_batch_count', 
                             50,
                             'Number of batches to eval.')
 # 一次性测试
-tf.app.flags.DEFINE_bool('eval_once', 
+#tf.app.flags.DEFINE_bool('eval_once', 
+tf.compat.v1.flags.DEFINE_bool('eval_once', 
                          True,
                          'Whether evaluate the model only once.')
 # 模型存储路劲
-tf.app.flags.DEFINE_string('log_root', 
+#tf.app.flags.DEFINE_string('log_root', 
+tf.compat.v1.flags.DEFINE_string('log_root', 
                            'temp',
                            'Directory to keep the checkpoints. Should be a '
                            'parent directory of FLAGS.train_dir/eval_dir.')
 # GPU设备数量（0代表CPU）
-tf.app.flags.DEFINE_integer('num_gpus', 
+#tf.app.flags.DEFINE_integer('num_gpus', 
+tf.compat.v1.flags.DEFINE_integer('num_gpus', 
                             1,
                             'Number of gpus used for training. (0 or 1)')
 

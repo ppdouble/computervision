@@ -2,15 +2,18 @@
 # coding: utf-8
 
 # # 使用预训练的VGG网络
+# 查看每一层操作的图像结果是什么样
 
 # In[1]:
 
 import scipy.io
 import numpy as np 
 import os 
-import scipy.misc 
+import imageio
 import matplotlib.pyplot as plt 
-import tensorflow as tf
+#import tensorflow as tf
+import tensorflow.compat.v1 as tf
+#tf.disable_v2_behavior()
 #get_ipython().magic(u'matplotlib inline')
 print ("所有包载入完毕")
 
@@ -80,10 +83,10 @@ def preprocess(image, mean_pixel):
 def unprocess(image, mean_pixel):
     return image + mean_pixel
 def imread(path):
-    return scipy.misc.imread(path).astype(np.float)
+    return imageio.imread(path).astype(float)
 def imsave(path, img):
     img = np.clip(img, 0, 255).astype(np.uint8)
-    scipy.misc.imsave(path, img)
+    imageio.imsave(path, img)
 print ("Functions for VGG ready")
 
 
@@ -92,6 +95,7 @@ print ("Functions for VGG ready")
 # In[5]:
 
 cwd  = os.getcwd()
+# 预训练的模型
 VGG_PATH = cwd + "/data/imagenet-vgg-verydeep-19.mat"
 IMG_PATH = cwd + "/images/cat.jpg"
 input_image = imread(IMG_PATH)

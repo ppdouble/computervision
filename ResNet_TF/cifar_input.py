@@ -16,7 +16,10 @@
 """CIFAR dataset input module.
 """
 
-import tensorflow as tf
+#import tensorflow as tf
+import tensorflow.compat.v1 as tf
+#tf.disable_v2_behavior()
+import glob
 
 def build_input(dataset, data_path, batch_size, mode):
   """Build CIFAR image and labels.
@@ -52,8 +55,10 @@ def build_input(dataset, data_path, batch_size, mode):
   record_bytes = label_bytes + label_offset + image_bytes
 
   # 获取文件名列表
-  data_files = tf.gfile.Glob(data_path)
+  #data_files = tf.gfile.Glob(data_path)
+  data_files = glob.glob(data_path)
   # 文件名列表生成器
+  #file_queue = tf.train.string_input_producer(data_files, shuffle=True)
   file_queue = tf.train.string_input_producer(data_files, shuffle=True)
   # 文件名列表里读取原始二进制数据
   reader = tf.FixedLengthRecordReader(record_bytes=record_bytes)
