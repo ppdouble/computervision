@@ -16,7 +16,7 @@ LRU 相邻通道kernel上同一位置的数值进行归一化（VGGNet的论文�
 
 网络结构如图:
 
-[vggnet](/VGG/vgg.png)
+[vggnet](vgg.png)
 
 为了后面为整数，前面做成 227\*227
 
