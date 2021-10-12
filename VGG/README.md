@@ -1,3 +1,5 @@
+#### 网络结构
+
 原始论文 [http://www.cs.toronto.edu/~fritz/absps/imagenet.pdf](http://www.cs.toronto.edu/~fritz/absps/imagenet.pdf)
 
 2012年ImageNet 竞赛第一，远比第二名领先，标志着DNN深度学习革命的开始。
@@ -14,7 +16,7 @@ LRU 相邻通道kernel上同一位置的数值进行归一化（VGGNet的论文�
 
 网络结构如图:
 
-![vggnet](/VGG/vgg.png)
+[vggnet](/VGG/vgg.png)
 
 为了后面为整数，前面做成 227\*227
 
@@ -41,3 +43,21 @@ LRU 相邻通道kernel上同一位置的数值进行归一化（VGGNet的论文�
 | |dropout |dropout|$4096\times 1$的向量|
 |全连接 8<br> $4096\times 1$|1000个神经元 | |$1000\times 1$的向量|
 
+#### 环境
+Anaconda3 2021.05
+
+Fedora workstation 29 x86_64
+
+python 3.8.8
+
+tensorflow                2.2.0
+
+scipy                     1.6.2
+
+imageio                   2.9.0
+
+#### tensorflow 2 兼容模式
+
+```python
+import tensorflow.compat.v1 as tf
+```
