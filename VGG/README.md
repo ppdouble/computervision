@@ -1,12 +1,21 @@
 原始论文 [http://www.cs.toronto.edu/~fritz/absps/imagenet.pdf](http://www.cs.toronto.edu/~fritz/absps/imagenet.pdf)
+
 2012年ImageNet 竞赛第一，远比第二名领先，标志着DNN深度学习革命的开始。
+
 特点：5个卷积层+3个全连接层
+
 60M个参数+650K个神经元
+
 2个分组->2个GPU(3GB、2块GTX 580 训练5至6天)
+
 引入的新技术 ReLU、Max polling、Dropout regularization
+
 LRU 相邻通道kernel上同一位置的数值进行归一化（VGGNet的论文认为没什么用）
+
 网络结构如图:
-![vggnet](/vgg.png)
+
+![vggnet](/VGG/vgg.png)
+
 为了后面为整数，前面做成 227\*227
 
 | 输～～～～～～~入 <br>$227\times 227\times 3$| GPU 1 | GPU 2| 输～～～～～～～～～～～～出|
