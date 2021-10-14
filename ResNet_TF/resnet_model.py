@@ -25,6 +25,7 @@ from collections import namedtuple
 import numpy as np
 import tensorflow as tf
 import six
+import tf_slim as slim
 
 from tensorflow.python.training import moving_averages
 
@@ -57,7 +58,7 @@ class ResNet(object):
   # 构建模型图
   def build_graph(self):
     # 新建全局step
-    self.global_step = tf.contrib.framework.get_or_create_global_step()
+    self.global_step = slim.get_or_create_global_step()
     # 构建ResNet网络模型
     self._build_model()
     # 构建优化训练操作

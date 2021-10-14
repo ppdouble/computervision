@@ -25,6 +25,7 @@ import resnet_model
 import tensorflow as tf
 
 
+tf.compat.v1.disable_eager_execution()
 # FLAGS参数设置
 FLAGS = tf.compat.v1.app.flags.FLAGS
 # 数据集类型
@@ -70,7 +71,7 @@ tf.compat.v1.app.flags.DEFINE_string('log_root',
                            'parent directory of FLAGS.train_dir/eval_dir.')
 # GPU设备数量（0代表CPU）
 tf.compat.v1.app.flags.DEFINE_integer('num_gpus', 
-                            1,
+                            0,
                             'Number of gpus used for training. (0 or 1)')
 
 
