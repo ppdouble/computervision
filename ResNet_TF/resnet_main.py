@@ -22,68 +22,54 @@ import sys
 import cifar_input
 import numpy as np
 import resnet_model
-#import tensorflow as tf
-import tensorflow.compat.v1 as tf
-#tf.disable_v2_behavior()
+import tensorflow as tf
 
 
 # FLAGS参数设置
-FLAGS = tf.compat.v1.flags.FLAGS
-#FLAGS = tf.app.flags.FLAGS
+FLAGS = tf.compat.v1.app.flags.FLAGS
 # 数据集类型
-#tf.app.flags.DEFINE_string('dataset', 
-tf.compat.v1.flags.DEFINE_string('dataset', 
+tf.compat.v1.app.flags.DEFINE_string('dataset', 
                            'cifar10', 
                            'cifar10 or cifar100.')
 # 模式：训练、测试
-#tf.app.flags.DEFINE_string('mode', 
-tf.compat.v1.flags.DEFINE_string('mode', 
+tf.compat.v1.app.flags.DEFINE_string('mode', 
                            'train',
                            'train or eval.')
 # 训练数据路径
-#tf.app.flags.DEFINE_string('train_data_path', 
-tf.compat.v1.flags.DEFINE_string('train_data_path', 
+tf.compat.v1.app.flags.DEFINE_string('train_data_path', 
                            'data/cifar-10-batches-bin/data_batch*',
                            'Filepattern for training data.')
 # 测试数据路劲
-#tf.app.flags.DEFINE_string('eval_data_path', 
-tf.compat.v1.flags.DEFINE_string('eval_data_path', 
+tf.compat.v1.app.flags.DEFINE_string('eval_data_path', 
                            'data/cifar-10-batches-bin/test_batch.bin',
                            'Filepattern for eval data')
 # 图片尺寸
-#tf.app.flags.DEFINE_integer('image_size', 
-tf.compat.v1.flags.DEFINE_integer('image_size', 
+tf.compat.v1.app.flags.DEFINE_integer('image_size', 
                             32, 
                             'Image side length.')
 # 训练过程数据的存放路劲
-#tf.app.flags.DEFINE_string('train_dir', 
-tf.compat.v1.flags.DEFINE_string('train_dir', 
+tf.compat.v1.app.flags.DEFINE_string('train_dir', 
                            'temp/train',
                            'Directory to keep training outputs.')
 # 测试过程数据的存放路劲
-#tf.app.flags.DEFINE_string('eval_dir', 
-tf.compat.v1.flags.DEFINE_string('eval_dir', 
+tf.compat.v1.app.flags.DEFINE_string('eval_dir', 
                            'temp/eval',
                            'Directory to keep eval outputs.')
 # 测试数据的Batch数量
-#tf.app.flags.DEFINE_integer('eval_batch_count', 
-tf.compat.v1.flags.DEFINE_integer('eval_batch_count', 
+tf.compat.v1.app.flags.DEFINE_integer('eval_batch_count', 
                             50,
                             'Number of batches to eval.')
 # 一次性测试
-#tf.app.flags.DEFINE_bool('eval_once', 
-tf.compat.v1.flags.DEFINE_bool('eval_once', 
+tf.compat.v1.app.flags.DEFINE_bool('eval_once', 
                          True,
                          'Whether evaluate the model only once.')
 # 模型存储路劲
-#tf.app.flags.DEFINE_string('log_root', 
-tf.compat.v1.flags.DEFINE_string('log_root', 
+tf.compat.v1.app.flags.DEFINE_string('log_root', 
                            'temp',
                            'Directory to keep the checkpoints. Should be a '
                            'parent directory of FLAGS.train_dir/eval_dir.')
 # GPU设备数量（0代表CPU）
-#tf.app.flags.DEFINE_integer('num_gpus', 
-tf.compat.v1.flags.DEFINE_integer('num_gpus', 
+tf.compat.v1.app.flags.DEFINE_integer('num_gpus', 
                             1,
                             'Number of gpus used for training. (0 or 1)')
 
@@ -97,33 +83,33 @@ def train(hps):
   model.build_graph()
 
   # 计算预测准确率
-  truth = tf.argmax(model.labels, axis=1)
-  predictions = tf.argmax(model.predictions, axis=1)
-  precision = tf.reduce_mean(tf.to_float(tf.equal(predictions, truth)))
+  truth = tf.argmax(input=model.labels, axis=1)
+  predictions = tf.argmax(input=model.predictions, axis=1)
+  precision = tf.reduce_mean(input_tensor=tf.cast(tf.equal(predictions, truth), dtype=tf.float32))
 
   # 建立总结存储器，每100步存储一次
-  summary_hook = tf.train.SummarySaverHook(
+  summary_hook = tf.estimator.SummarySaverHook(
               save_steps=100,
               output_dir=FLAGS.train_dir,
-              summary_op=tf.summary.merge(
+              summary_op=tf.compat.v1.summary.merge(
                               [model.summaries,
-                               tf.summary.scalar('Precision', precision)]))
+                               tf.compat.v1.summary.scalar('Precision', precision)]))
   # 建立日志打印器，每100步打印一次
-  logging_hook = tf.train.LoggingTensorHook(
+  logging_hook = tf.estimator.LoggingTensorHook(
       tensors={'step': model.global_step,
                'loss': model.cost,
                'precision': precision},
       every_n_iter=100)
 
   # 学习率更新器，基于全局Step
-  class _LearningRateSetterHook(tf.train.SessionRunHook):
+  class _LearningRateSetterHook(tf.estimator.SessionRunHook):
 
     def begin(self):
       #初始学习率
       self._lrn_rate = 0.1
 
     def before_run(self, run_context):
-      return tf.train.SessionRunArgs(
+      return tf.estimator.SessionRunArgs(
                       # 获取全局Step
                       model.global_step,
                       # 设置学习率
@@ -142,13 +128,13 @@ def train(hps):
         self._lrn_rate = 0.0001
 
   # 建立监控Session
-  with tf.train.MonitoredTrainingSession(
+  with tf.compat.v1.train.MonitoredTrainingSession(
       checkpoint_dir=FLAGS.log_root,
       hooks=[logging_hook, _LearningRateSetterHook()],
       chief_only_hooks=[summary_hook],
       # 禁用默认的SummarySaverHook，save_summaries_steps设置为0
       save_summaries_steps=0, 
-      config=tf.ConfigProto(allow_soft_placement=True)) as mon_sess:
+      config=tf.compat.v1.ConfigProto(allow_soft_placement=True)) as mon_sess:
     while not mon_sess.should_stop():
       # 执行优化训练操作
       mon_sess.run(model.train_op)
@@ -162,15 +148,15 @@ def evaluate(hps):
   model = resnet_model.ResNet(hps, images, labels, FLAGS.mode)
   model.build_graph()
   # 模型变量存储器
-  saver = tf.train.Saver()
+  saver = tf.compat.v1.train.Saver()
   # 总结文件 生成器
-  summary_writer = tf.summary.FileWriter(FLAGS.eval_dir)
+  summary_writer = tf.compat.v1.summary.FileWriter(FLAGS.eval_dir)
   
   # 执行Session
-  sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
+  sess = tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(allow_soft_placement=True))
   
   # 启动所有队列执行器
-  tf.train.start_queue_runners(sess)
+  tf.compat.v1.train.start_queue_runners(sess)
 
   best_precision = 0.0
   while True:
@@ -178,14 +164,14 @@ def evaluate(hps):
     try:
       ckpt_state = tf.train.get_checkpoint_state(FLAGS.log_root)
     except tf.errors.OutOfRangeError as e:
-      tf.logging.error('Cannot restore checkpoint: %s', e)
+      tf.compat.v1.logging.error('Cannot restore checkpoint: %s', e)
       continue
     if not (ckpt_state and ckpt_state.model_checkpoint_path):
-      tf.logging.info('No model to eval yet at %s', FLAGS.log_root)
+      tf.compat.v1.logging.info('No model to eval yet at %s', FLAGS.log_root)
       continue
   
     # 读取模型数据(训练期间生成)
-    tf.logging.info('Loading checkpoint %s', ckpt_state.model_checkpoint_path)
+    tf.compat.v1.logging.info('Loading checkpoint %s', ckpt_state.model_checkpoint_path)
     saver.restore(sess, ckpt_state.model_checkpoint_path)
 
     # 逐Batch执行测试
@@ -206,13 +192,13 @@ def evaluate(hps):
     best_precision = max(precision, best_precision)
 
     # 添加准确率总结
-    precision_summ = tf.Summary()
+    precision_summ = tf.compat.v1.Summary()
     precision_summ.value.add(
         tag='Precision', simple_value=precision)
     summary_writer.add_summary(precision_summ, train_step)
     
     # 添加最佳准确总结
-    best_precision_summ = tf.Summary()
+    best_precision_summ = tf.compat.v1.Summary()
     best_precision_summ.value.add(
         tag='Best Precision', simple_value=best_precision)
     summary_writer.add_summary(best_precision_summ, train_step)
@@ -221,7 +207,7 @@ def evaluate(hps):
     #summary_writer.add_summary(summaries, train_step)
     
     # 打印日志
-    tf.logging.info('loss: %.3f, precision: %.3f, best precision: %.3f' %
+    tf.compat.v1.logging.info('loss: %.3f, precision: %.3f, best precision: %.3f' %
                     (loss, precision, best_precision))
     
     # 执行写文件
@@ -273,5 +259,5 @@ def main(_):
 
 
 if __name__ == '__main__':
-  tf.logging.set_verbosity(tf.logging.INFO)
-  tf.app.run()
+  tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
+  tf.compat.v1.app.run()

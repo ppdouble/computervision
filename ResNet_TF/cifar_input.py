@@ -16,10 +16,7 @@
 """CIFAR dataset input module.
 """
 
-#import tensorflow as tf
-import tensorflow.compat.v1 as tf
-#tf.disable_v2_behavior()
-import glob
+import tensorflow as tf
 
 def build_input(dataset, data_path, batch_size, mode):
   """Build CIFAR image and labels.
@@ -55,37 +52,35 @@ def build_input(dataset, data_path, batch_size, mode):
   record_bytes = label_bytes + label_offset + image_bytes
 
   # 获取文件名列表
-  #data_files = tf.gfile.Glob(data_path)
-  data_files = glob.glob(data_path)
+  data_files = tf.io.gfile.glob(data_path)
   # 文件名列表生成器
-  #file_queue = tf.train.string_input_producer(data_files, shuffle=True)
-  file_queue = tf.train.string_input_producer(data_files, shuffle=True)
+  file_queue = tf.compat.v1.train.string_input_producer(data_files, shuffle=True)
   # 文件名列表里读取原始二进制数据
-  reader = tf.FixedLengthRecordReader(record_bytes=record_bytes)
+  reader = tf.compat.v1.FixedLengthRecordReader(record_bytes=record_bytes)
   _, value = reader.read(file_queue)
 
   # 将原始二进制数据转换成图片数据及类别标签
-  record = tf.reshape(tf.decode_raw(value, tf.uint8), [record_bytes])
+  record = tf.reshape(tf.io.decode_raw(value, tf.uint8), [record_bytes])
   label = tf.cast(tf.slice(record, [label_offset], [label_bytes]), tf.int32)
   # 将数据串 [depth * height * width] 转换成矩阵 [depth, height, width].
   depth_major = tf.reshape(tf.slice(record, [label_bytes], [image_bytes]),
                            [depth, image_size, image_size])
   # 转换维数：[depth, height, width]转成[height, width, depth].
-  image = tf.cast(tf.transpose(depth_major, [1, 2, 0]), tf.float32)
+  image = tf.cast(tf.transpose(a=depth_major, perm=[1, 2, 0]), tf.float32)
 
   if mode == 'train':
     # 增减图片尺寸
-    image = tf.image.resize_image_with_crop_or_pad(
+    image = tf.image.resize_with_crop_or_pad(
                         image, image_size+4, image_size+4)
     # 随机裁剪图片
-    image = tf.random_crop(image, [image_size, image_size, 3])
+    image = tf.image.random_crop(image, [image_size, image_size, 3])
     # 随机水平翻转图片
     image = tf.image.random_flip_left_right(image)
     # 逐图片做像素值中心化(减均值)
     image = tf.image.per_image_standardization(image)
 
     # 建立输入数据队列(随机洗牌)
-    example_queue = tf.RandomShuffleQueue(
+    example_queue = tf.queue.RandomShuffleQueue(
         # 队列容量
         capacity=16 * batch_size,
         # 队列数据的最小容许量
@@ -97,12 +92,12 @@ def build_input(dataset, data_path, batch_size, mode):
     num_threads = 16
   else:
     # 获取测试图片，并做像素值中心化
-    image = tf.image.resize_image_with_crop_or_pad(
+    image = tf.image.resize_with_crop_or_pad(
                         image, image_size, image_size)
     image = tf.image.per_image_standardization(image)
 
     # 建立输入数据队列(先入先出队列）
-    example_queue = tf.FIFOQueue(
+    example_queue = tf.queue.FIFOQueue(
         3 * batch_size,
         dtypes=[tf.float32, tf.int32],
         shapes=[[image_size, image_size, depth], [1]])
@@ -112,7 +107,7 @@ def build_input(dataset, data_path, batch_size, mode):
   # 数据入队操作
   example_enqueue_op = example_queue.enqueue([image, label])
   # 队列执行器
-  tf.train.add_queue_runner(tf.train.queue_runner.QueueRunner(
+  tf.compat.v1.train.add_queue_runner(tf.compat.v1.train.queue_runner.QueueRunner(
       example_queue, [example_enqueue_op] * num_threads))
 
   # 数据出队操作，从队列读取Batch数据
@@ -125,7 +120,7 @@ def build_input(dataset, data_path, batch_size, mode):
   #   1 ]       [1,0,0,0,0]]
   labels = tf.reshape(labels, [batch_size, 1])
   indices = tf.reshape(tf.range(0, batch_size, 1), [batch_size, 1])
-  labels = tf.sparse_to_dense(
+  labels = tf.compat.v1.sparse_to_dense(
                   tf.concat(values=[indices, labels], axis=1),
                   [batch_size, num_classes], 1.0, 0.0)
 
@@ -138,5 +133,5 @@ def build_input(dataset, data_path, batch_size, mode):
   assert labels.get_shape()[1] == num_classes
 
   # 添加图片总结
-  tf.summary.image('images', images)
+  tf.compat.v1.summary.image('images', images)
   return images, labels
